@@ -1,0 +1,30 @@
+{
+  "schedules": [
+    {
+      "payee": {
+        "name": "Jane Doe",
+        "sortCode": "01-01-01",
+        "account": "12345678",
+        "reference": "XX010101"
+      },
+      "amount": 123.45,
+      "frequency": "1W",
+      "paymentStartDate": "2017-12-12",
+      "paymentEndDate": "2018-04-03",
+      "processedUpTo": "2018-01-02"
+    },
+    {
+      "payee": {
+        "name": "John Smith",
+        "sortCode": "02-02-02",
+        "account": "87654321",
+        "reference": "YY020202"
+      },
+      "amount": 155.25,
+      "frequency": "1M",
+      "paymentStartDate": "2017-10-21",
+      "paymentEndDate": "2018-03-21",
+      "processedUpTo": "2017-12-21"
+    }
+  ]
+}
