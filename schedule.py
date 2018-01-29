@@ -5,6 +5,31 @@ from datetime import datetime
 from datetime import timedelta
 from monthdelta import monthdelta
 
+# FUNCTIONS
+
+# Create a CPS format string from a date
+def formet_as_cps_date(d):
+    return d.strftime('%d-%b-%Y') # e.g. 24-Jan-2018
+
+# Create a date from a CPS format string    
+def date_from_cps_format(cps):
+    return datetime.strptime(cps, '%d-%b-%Y')
+
+# Create a date from an ISO format string
+def format_as_iso_date(d):
+    return d.strftime('%Y-%m-%d')
+
+    # Create a date from an ISO format string
+def date_from_iso_format(iso):
+    return datetime.strptime(iso,'%Y-%m-%d')
+
+# Make a payment
+def make_payment(schedule):
+    print('PAYMENT: ' + schedule['payee']['name'] + '|' + schedule['payee']['sortCode'] + '|' + schedule['payee']['account'] + '|' + schedule['reference'] + '|' + str(schedule['amount']))
+    
+
+# MAIN
+
 # Get CPS payment schedule into a dictionary (map).
 # Schedule format is: 'due from date', 'due to date', 'process date'
 processing_days = {}
@@ -15,23 +40,22 @@ for line in f1:
 
 # Assuming last processing was yesterday, work out whether
 # any payments should be processed today
-cps_format = '%d-%b-%Y' # e.g. 24-Jan-2018
 now = datetime.now()
 itr_date = now
-todays_date = now.strftime(cps_format)
+todays_date = formet_as_cps_date(now)
 process_to_due_date = None
 while True:
-    k = itr_date.strftime(cps_format)  # create the key to lookup day
+    k = formet_as_cps_date(itr_date)        # create the key to lookup day
     if k in processing_days:            # lookup day in processing days
         # check if payments due on day k should be processed today
         if processing_days[k][1] == todays_date:
-            tmp = datetime.strptime(processing_days[k][0], cps_format)
+            tmp = date_from_cps_format(processing_days[k][0])
             if (not process_to_due_date or process_to_due_date < tmp):
-                process_to_due_date = dt
+                process_to_due_date = tmp
         else:
-            dt = datetime.strptime(processing_days[k][1], date_format)
+            tmp = date_from_cps_format(processing_days[k][1])
             # if the new process date is in the future, then we are done today
-            if dt > now:
+            if tmp > now:
                 break
         itr_date = itr_date + timedelta(days=1)
     else:   # something wrong if we can't find the date in our processing days
@@ -43,16 +67,30 @@ if not process_to_due_date:
     sys.exit()
 
 # We now process all payments due up to and including process_to_due_date
-print('Processing up to: ' + process_to_due_date.strftime(date_format))
+print('Processing up to: ' + formet_as_cps_date(process_to_due_date))
 data = json.load(open('schedules.json'))
 for schedule in data['schedules']:
     freq_period = schedule['frequency'][1:].upper()
     freq_number = int(schedule['frequency'][0:1])
     if freq_period == 'W':
         delta = timedelta(days=(7 * freq_number))
-        print(str(delta))
     elif freq_period == 'M':
         delta = monthdelta(freq_number)
     else:
-        continue    # not a valid schedule frequency
-    print(schedule['processedUpTo'] + ':' + schedule['frequency'])
+        continue    # not a valid schedule
+    if schedule['processedUpTo'] == '':
+        processed_up_to = date_from_iso_format(schedule['paymentStartDate'])
+    else:
+        processed_up_to = date_from_iso_format(schedule['processedUpTo']) + delta
+    tmp = processed_up_to
+    while True:
+        if (tmp <= process_to_due_date and tmp <= date_from_iso_format(schedule['paymentEndDate'])):
+            make_payment(schedule)
+            processed_up_to = tmp
+        else:
+            schedule['processedUpTo'] = format_as_iso_date(processed_up_to)
+            break
+        tmp = processed_up_to + delta
+
+# Lastly update the schedule
+json.dump(data, open('schedules_update.json', 'w'), indent=2)
