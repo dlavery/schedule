@@ -5,8 +5,9 @@ from datetime import datetime
 from datetime import timedelta
 from monthdelta import monthdelta
 
+##########################################
 # FUNCTIONS
-
+##########################################
 # Create a CPS format string from a date
 def formet_as_cps_date(d):
     if d:
@@ -14,13 +15,13 @@ def formet_as_cps_date(d):
     else:
         return ''
 
-# Create a date from a CPS format string    
+# Create a date from a CPS format string
 def date_from_cps_format(cps):
     if cps:
         return datetime.strptime(cps, '%d-%b-%Y')
     else:
         return ''
-        
+
 # Create a date from an ISO format string
 def format_as_iso_date(d):
     if d:
@@ -37,11 +38,17 @@ def date_from_iso_format(iso):
 
 # Make a payment
 def make_payment(schedule, reference):
-    print('PAYMENT: ' + schedule['payee']['name'] + '|' + schedule['payee']['sortCode'] + '|' + schedule['payee']['account'] + '|' + reference + '|' + str('%.2f' % schedule['amount']))
-    
+    print('PAYMENT: '
+    + schedule['payee']['name'] + '|'
+    + schedule['payee']['sortCode'] + '|'
+    + schedule['payee']['account'] + '|'
+    + reference + '|'
+    + str('%.2f' % schedule['amount']))
 
-# MAIN
 
+##########################################
+# MAIN SCRIPT
+##########################################
 # Get CPS payment schedule into a dictionary (map).
 # Schedule format is: 'due from date', 'due to date', 'process date'
 processing_days = {}
@@ -57,7 +64,7 @@ itr_date = now
 todays_date = formet_as_cps_date(now)
 process_to_due_date = None
 while True:
-    k = formet_as_cps_date(itr_date)        # create the key to lookup day
+    k = formet_as_cps_date(itr_date)    # create the key to lookup day
     if k in processing_days:            # lookup day in processing days
         # check if payments due on day k should be processed today
         if processing_days[k][1] == todays_date:
@@ -80,6 +87,7 @@ if not process_to_due_date:
 
 # We now process all payments due up to and including process_to_due_date
 print('Processing up to: ' + formet_as_cps_date(process_to_due_date))
+# Load the schedules
 data = json.load(open('schedules.json'))
 for schedule in data['schedules']:
     freq_period = schedule['frequency'][1:].upper()
@@ -104,5 +112,5 @@ for schedule in data['schedules']:
             schedule['processedUpTo'] = format_as_iso_date(processed_up_to)
             break
 
-# Lastly update the schedule
+# Lastly update the schedules
 json.dump(data, open('schedules_update.json', 'w'), indent=2)
