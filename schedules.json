@@ -6,8 +6,7 @@
         "sortCode": "01-01-01",
         "account": "12345678"
       },
-      "reference": "XX010101",
-      "amount": 123.45,
+      "amount": 123.4,
       "frequency": "1W",
       "paymentStartDate": "2017-12-13",
       "paymentEndDate": "2018-04-04",
@@ -19,12 +18,35 @@
         "sortCode": "02-02-02",
         "account": "87654321"
       },
-      "reference": "YY020202",
       "amount": 155.25,
       "frequency": "1M",
       "paymentStartDate": "2017-10-21",
       "paymentEndDate": "2018-03-21",
       "processedUpTo": "2017-12-21"
+    },
+    {
+      "payee": {
+        "name": "Mary Jones",
+        "sortCode": "03-03-03",
+        "account": "21435465"
+      },
+      "amount": 147.2,
+      "frequency": "1W",
+      "paymentStartDate": "2017-12-14",
+      "paymentEndDate": "2018-04-05",
+      "processedUpTo": "2018-01-25"
+    },
+    {
+      "payee": {
+        "name": "Fred Wilson",
+        "sortCode": "04-04-04",
+        "account": "38675465"
+      },
+      "amount": 155,
+      "frequency": "1W",
+      "paymentStartDate": "2018-02-02",
+      "paymentEndDate": "2018-04-05",
+      "processedUpTo": ""
     }
   ]
 }

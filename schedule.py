@@ -9,23 +9,35 @@ from monthdelta import monthdelta
 
 # Create a CPS format string from a date
 def formet_as_cps_date(d):
-    return d.strftime('%d-%b-%Y') # e.g. 24-Jan-2018
+    if d:
+        return d.strftime('%d-%b-%Y') # e.g. 24-Jan-2018
+    else:
+        return ''
 
 # Create a date from a CPS format string    
 def date_from_cps_format(cps):
-    return datetime.strptime(cps, '%d-%b-%Y')
-
+    if cps:
+        return datetime.strptime(cps, '%d-%b-%Y')
+    else:
+        return ''
+        
 # Create a date from an ISO format string
 def format_as_iso_date(d):
-    return d.strftime('%Y-%m-%d')
+    if d:
+        return d.strftime('%Y-%m-%d')
+    else:
+        return ''
 
-    # Create a date from an ISO format string
+# Create a date from an ISO format string
 def date_from_iso_format(iso):
-    return datetime.strptime(iso,'%Y-%m-%d')
+    if iso:
+        return datetime.strptime(iso,'%Y-%m-%d')
+    else:
+        return ''
 
 # Make a payment
-def make_payment(schedule):
-    print('PAYMENT: ' + schedule['payee']['name'] + '|' + schedule['payee']['sortCode'] + '|' + schedule['payee']['account'] + '|' + schedule['reference'] + '|' + str(schedule['amount']))
+def make_payment(schedule, reference):
+    print('PAYMENT: ' + schedule['payee']['name'] + '|' + schedule['payee']['sortCode'] + '|' + schedule['payee']['account'] + '|' + reference + '|' + str('%.2f' % schedule['amount']))
     
 
 # MAIN
@@ -78,19 +90,19 @@ for schedule in data['schedules']:
         delta = monthdelta(freq_number)
     else:
         continue    # not a valid schedule
-    if schedule['processedUpTo'] == '':
-        processed_up_to = date_from_iso_format(schedule['paymentStartDate'])
+    processed_up_to = date_from_iso_format(schedule['processedUpTo'])
+    if processed_up_to == '':
+        tmp = date_from_iso_format(schedule['paymentStartDate'])
     else:
-        processed_up_to = date_from_iso_format(schedule['processedUpTo']) + delta
-    tmp = processed_up_to
+        tmp = processed_up_to + delta
     while True:
         if (tmp <= process_to_due_date and tmp <= date_from_iso_format(schedule['paymentEndDate'])):
-            make_payment(schedule)
+            make_payment(schedule, tmp.strftime('%d-%b') + ' PAYMENT' )
             processed_up_to = tmp
+            tmp = processed_up_to + delta
         else:
             schedule['processedUpTo'] = format_as_iso_date(processed_up_to)
             break
-        tmp = processed_up_to + delta
 
 # Lastly update the schedule
 json.dump(data, open('schedules_update.json', 'w'), indent=2)
