@@ -22,7 +22,7 @@ def date_from_cps_format(cps):
     else:
         return ''
 
-# Create a date from an ISO format string
+# Create an ISO date format string from a date
 def format_as_iso_date(d):
     if d:
         return d.strftime('%Y-%m-%d')

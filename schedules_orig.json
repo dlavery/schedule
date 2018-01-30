@@ -10,7 +10,7 @@
       "frequency": "1W",
       "paymentStartDate": "2017-12-13",
       "paymentEndDate": "2018-04-04",
-      "processedUpTo": "2018-01-31"
+      "processedUpTo": "2018-01-03"
     },
     {
       "payee": {
@@ -22,7 +22,7 @@
       "frequency": "1M",
       "paymentStartDate": "2017-10-21",
       "paymentEndDate": "2018-03-21",
-      "processedUpTo": "2018-01-21"
+      "processedUpTo": "2017-12-21"
     },
     {
       "payee": {
