@@ -87,7 +87,7 @@ if not process_to_due_date:
 
 # We now process all payments due up to and including process_to_due_date
 print('Processing up to: ' + formet_as_cps_date(process_to_due_date))
-# Load the schedules
+# Load the schedules from file
 data = json.load(open('schedules.json'))
 for schedule in data['schedules']:
     freq_period = schedule['frequency'][1:].upper()
@@ -109,8 +109,9 @@ for schedule in data['schedules']:
             processed_up_to = tmp
             tmp = processed_up_to + delta
         else:
+            # update the schedule
             schedule['processedUpTo'] = format_as_iso_date(processed_up_to)
             break
 
-# Lastly update the schedules
+# Lastly write the schedules back to file
 json.dump(data, open('schedules_update.json', 'w'), indent=2)
