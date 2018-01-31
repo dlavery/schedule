@@ -1,6 +1,7 @@
 import unittest
 import json
 from datetime import date
+from datetime import datetime
 from datetime import timedelta
 from monthdelta import monthdelta
 from schedule import Schedule
@@ -11,6 +12,13 @@ class TestSchedule(unittest.TestCase):
         data = {}
         data['schedules'] = []
         todays_date = date.today()
+        
+        fh = open('processing_days.csv', 'r')
+        processing_days = {}
+        for line in fh:
+            l = line[:-1].split(',')
+            processing_days[l[0]] = (l[1], l[2])
+        fh.close()        
 
         # Schedule 1 - multiple weekly payments due
         base_date = todays_date + timedelta(days=2)
@@ -57,7 +65,7 @@ class TestSchedule(unittest.TestCase):
         })
 
         # Schedule 5 - Brand new weekly schedule, no payment due
-        base_date = todays_date + timedelta(days=6)
+        base_date = todays_date + timedelta(days=7)
         data['schedules'].append({ \
             "payee": {"name": "Joe Jones", "sortCode": "05-05-05", "account": "56789012"}, \
             "amount": 78.3, \
@@ -79,15 +87,19 @@ class TestSchedule(unittest.TestCase):
         })
 
         # Schedule 7 - no payments due (sometimes)
-        #base_date = todays_date + timedelta(days=3)
-        #data['schedules'].append({ \
-        #    "payee": {"name": "Harry X", "sortCode": "07-07-07", "account": "78901234"}, \
-        #    "amount": 119.35, \
-        #    "frequency": "1W", \
-        #    "paymentStartDate": (base_date - timedelta(weeks=1)).isoformat(), \
-        #    "paymentEndDate": (base_date + timedelta(weeks=51)).isoformat(), \
-        #    "processedUpTo": (base_date - timedelta(weeks=1)).isoformat() \
-        #})
+        base_date = todays_date + timedelta(days=3)
+        if base_date >= datetime.strptime(processing_days[base_date.strftime('%d-%b-%Y')][1], '%d-%b-%Y').date():
+            print('** ONE payment expected to Harry X **')
+        else:
+            print('** NO payment expected to Harry X **')
+        data['schedules'].append({ \
+            "payee": {"name": "Harry X", "sortCode": "07-07-07", "account": "78901234"}, \
+            "amount": 119.35, \
+            "frequency": "1W", \
+            "paymentStartDate": (base_date - timedelta(weeks=1)).isoformat(), \
+            "paymentEndDate": (base_date + timedelta(weeks=51)).isoformat(), \
+            "processedUpTo": (base_date - timedelta(weeks=1)).isoformat() \
+        })
 
         fh = open('schedules.json', 'w')
         json.dump(data, fh, indent=2)
@@ -118,9 +130,13 @@ class TestSchedule(unittest.TestCase):
         l = f1.readline()[:-1].split('|')
         self.assertEqual(l[0], 'Jo Jones')
         self.assertEqual(l[4], '176.21')
-        # no more payments
+        # maybe a payment to Harry X
         l = f1.readline()[:-1].split('|')
-        self.assertEqual(l, [''])
+        if l[0] == 'Harry X':
+            self.assertEqual(l[4], '119.35')
+        else:
+            # no more payments
+            self.assertEqual(l, [''])
 
         f1.close()
 
@@ -146,8 +162,9 @@ class TestSchedule(unittest.TestCase):
         self.assertEqual(data['schedules'][5]['payee']['name'], 'Jo Jones')
         self.assertEqual(data['schedules'][5]['processedUpTo'], (todays_date + timedelta(days=2)).isoformat())
         # expect processed up to date for Harry X is unchanged (sometimes)
-        #self.assertEqual(data['schedules'][6]['payee']['name'], 'Harry X')
-        #self.assertEqual(data['schedules'][6]['processedUpTo'], (todays_date - timedelta(days=4)).isoformat())
+        if data['schedules'][6]:
+            self.assertEqual(data['schedules'][6]['payee']['name'], 'Harry X')
+            self.assertEqual(data['schedules'][6]['processedUpTo'], (todays_date + timedelta(days=3)).isoformat())
 
         f2.close()
 
