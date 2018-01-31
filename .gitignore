@@ -107,3 +107,10 @@ venv.bak/
 bin/
 pip-selfcheck.json
 pyvenv.cfg
+.gitignore
+schedules.json
+schedules_update.json
+schedules_0.json
+schedules_1.json
+payments.csv
+.DS_Store
