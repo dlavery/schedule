@@ -89,9 +89,9 @@ class TestSchedule(unittest.TestCase):
         # Schedule 7 - no payments due (sometimes)
         base_date = todays_date + timedelta(days=3)
         if base_date >= datetime.strptime(processing_days[base_date.strftime('%d-%b-%Y')][1], '%d-%b-%Y').date():
-            print('** ONE payment expected to Harry X **')
+            self.schedule7_expected = True
         else:
-            print('** NO payment expected to Harry X **')
+            self.schedule7_expected = False
         data['schedules'].append({ \
             "payee": {"name": "Harry X", "sortCode": "07-07-07", "account": "78901234"}, \
             "amount": 119.35, \
@@ -132,7 +132,8 @@ class TestSchedule(unittest.TestCase):
         self.assertEqual(l[4], '176.21')
         # maybe a payment to Harry X
         l = f1.readline()[:-1].split('|')
-        if l[0] == 'Harry X':
+        if self.schedule7_expected:
+            self.assertEqual(l[0], 'Harry X')
             self.assertEqual(l[4], '119.35')
         else:
             # no more payments
@@ -162,9 +163,12 @@ class TestSchedule(unittest.TestCase):
         self.assertEqual(data['schedules'][5]['payee']['name'], 'Jo Jones')
         self.assertEqual(data['schedules'][5]['processedUpTo'], (todays_date + timedelta(days=2)).isoformat())
         # expect processed up to date for Harry X is unchanged (sometimes)
-        if data['schedules'][6]:
+        if self.schedule7_expected:
             self.assertEqual(data['schedules'][6]['payee']['name'], 'Harry X')
             self.assertEqual(data['schedules'][6]['processedUpTo'], (todays_date + timedelta(days=3)).isoformat())
+        else:
+            self.assertEqual(data['schedules'][6]['payee']['name'], 'Harry X')
+            self.assertEqual(data['schedules'][6]['processedUpTo'], (todays_date - timedelta(days=4)).isoformat())
 
         f2.close()
 
