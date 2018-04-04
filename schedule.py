@@ -15,17 +15,17 @@ class Schedule:
         except FileNotFoundError:
             pass
 
-    # Create a CPS format string from a date
-    def formet_as_cps_date(self, d):
+    # Create a BACS format string from a date
+    def formet_as_bacs_date(self, d):
         if d:
             return d.strftime('%d-%b-%Y') # e.g. 24-Jan-2018
         else:
             return ''
 
-    # Create a date from a CPS format string
-    def date_from_cps_format(self, cps):
-        if cps:
-            return datetime.strptime(cps, '%d-%b-%Y')
+    # Create a date from a BACS format string
+    def date_from_bacs_format(self, bacs):
+        if bacs:
+            return datetime.strptime(bacs, '%d-%b-%Y')
         else:
             return ''
 
@@ -53,7 +53,7 @@ class Schedule:
         fh.write(s + '\n')
         print('PAYMENT: ' + s)
 
-    # Get CPS payment schedule into a dictionary (map).
+    # Get BACS payment schedule into a dictionary (map).
     # Schedule format is: 'due from date', 'due to date', 'process date',
     # index is 'due from date'
     def get_schedule(self):
@@ -68,18 +68,18 @@ class Schedule:
     def find_forward_date(self):
         now = datetime.now()
         itr_date = now
-        todays_date = self.formet_as_cps_date(now)
+        todays_date = self.formet_as_bacs_date(now)
         process_to_due_date = None
         while True:
-            k = self.formet_as_cps_date(itr_date)    # create the key to lookup day
+            k = self.formet_as_bacs_date(itr_date)    # create the key to lookup day
             if k in self.processing_days:            # lookup day in processing days
                 # check if payments due on day k should be processed today
                 if self.processing_days[k][1] == todays_date:
-                    tmp = self.date_from_cps_format(self.processing_days[k][0])
+                    tmp = self.date_from_bacs_format(self.processing_days[k][0])
                     if (not process_to_due_date or process_to_due_date < tmp):
                         process_to_due_date = tmp
                 else:
-                    tmp = self.date_from_cps_format(self.processing_days[k][1])
+                    tmp = self.date_from_bacs_format(self.processing_days[k][1])
                     # if the new process date is in the future, then we are done today
                     if tmp > now:
                         break
@@ -95,7 +95,7 @@ class Schedule:
         self.get_schedule()
         now = datetime.now()
         itr_date = now
-        todays_date = self.formet_as_cps_date(now)
+        todays_date = self.formet_as_bacs_date(now)
         process_to_due_date = self.find_forward_date()
 
         # If payments should be processed today then process_to_due_date will be set
@@ -104,7 +104,7 @@ class Schedule:
             return
 
         # We now process all payments due up to and including process_to_due_date
-        print('Processing up to: ' + self.formet_as_cps_date(process_to_due_date))
+        print('Processing up to: ' + self.formet_as_bacs_date(process_to_due_date))
         # Load the schedules from file
         f1 = open('schedules.json')
         data = json.load(f1)
